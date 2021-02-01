@@ -3,6 +3,8 @@ import BN from 'bn.js';
 import { formatBalance } from '@polkadot/util';
 import BigNumber from 'bignumber.js';
 
+import { AssetAmount } from '../types';
+
 const decimalPlaces = 12;
 
 const formatBalanceAmount = (balance: BN): AssetAmount => {
