@@ -1,4 +1,12 @@
 import BN from 'bn.js';
+import { ApiPromise } from '@polkadot/api';
+
+export type ApiListeners = {
+    error: (e: Error) => void;
+    connected: (api?: ApiPromise) => void;
+    disconnected: () => void;
+    ready: (api?: ApiPromise) => void;
+};
 
 export type AssetAmount = {
     amount: BN;

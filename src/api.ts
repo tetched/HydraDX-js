@@ -7,6 +7,8 @@ import {
 } from '@polkadot/extension-dapp';
 import { InjectedAccountWithMeta } from '@polkadot/extension-inject/types';
 
+import { ApiListeners } from './types';
+
 import * as query from './api/query';
 import * as tx from './api/tx';
 
@@ -40,8 +42,8 @@ const syncWallets = async (
   }
 };
 
-const initialize = async (apiUrl?: string): Promise<HydraApiPromise> => {
-  return new Promise(async (resolve, reject) => {
+const initialize = async (apiListeners?: ApiListeners, apiUrl?: string, maxRetries: number = 20): Promise<HydraApiPromise> => {
+  return new Promise<any>(async (resolve, reject) => {
     const local =
     window.location.hostname === '127.0.0.1' ||
     window.location.hostname === 'localhost';
@@ -50,108 +52,197 @@ const initialize = async (apiUrl?: string): Promise<HydraApiPromise> => {
       ? 'ws://127.0.0.1:9944'
       : (apiUrl || 'wss://hack.hydradx.io:9944');
 
-    const wsProvider = new WsProvider(serverAddress);
+    const wsProvider = new WsProvider(serverAddress, false);
+    let reconnectionsIndex = 0;
+    let isDisconnection  = false;
 
-    new ApiPromise({
-      provider: wsProvider,
-      rpc: {
-        amm: {
-          getSpotPrice: {
-            description: 'Get spot price',
-            params: [
-              {
-                name: 'asset1',
-                type: 'AssetId',
-              },
-              {
-                name: 'asset2',
-                type: 'AssetId',
-              },
-              {
-                name: 'amount',
-                type: 'Balance',
-              },
-            ],
-            type: 'BalanceInfo',
-          },
-          getSellPrice: {
-            description: 'Get AMM sell price',
-            params: [
-              {
-                name: 'asset1',
-                type: 'AssetId',
-              },
-              {
-                name: 'asset2',
-                type: 'AssetId',
-              },
-              {
-                name: 'amount',
-                type: 'Balance',
-              },
-            ],
-            type: 'BalanceInfo',
-          },
-          getBuyPrice: {
-            description: 'Get AMM buy price',
-            params: [
-              {
-                name: 'asset1',
-                type: 'AssetId',
-              },
-              {
-                name: 'asset2',
-                type: 'AssetId',
-              },
-              {
-                name: 'amount',
-                type: 'Balance',
-              },
-            ],
-            type: 'BalanceInfo',
-          },
-        },
-      },
-      types: {
-        Amount: 'i128',
-        AmountOf: 'Amount',
-        Address: 'AccountId',
-        LookupSource: 'AccountId',
-        CurrencyId: 'AssetId',
-        CurrencyIdOf: 'AssetId',
-        BalanceInfo: {
-          amount: 'Balance',
-          assetId: 'AssetId',
-        },
-        IntentionID: 'Hash',
-        IntentionType: {
-          _enum: ['SELL', 'BUY'],
-        },
-        Intention: {
-          who: 'AccountId',
-          asset_sell: 'AssetId',
-          asset_buy: 'AssetId',
-          amount_sell: 'Balance',
-          amount_buy: 'Balance',
-          trade_limit: 'Balance',
-          discount: 'bool',
-          sell_or_buy: 'IntentionType',
-          intention_id: 'IntentionID',
-        },
-        Price: 'Balance',
-      },
-    }).isReadyOrError
-    .then(apiResponse => {
-      api = apiResponse;
-      api.hydraDx = {
-        query,
-        tx,
-      };
-      resolve(api);
-    })
-    .catch(e => {
-      reject(e);
+    /**
+     * Recovering connection to WS. Will be done "reconnectionsNumber" attempts.
+     * If connection is not recovered, API listener "error" will be executed.
+     */
+    const recoverConnection = (error: Error) => {
+      if (reconnectionsIndex < maxRetries) {
+        setTimeout(() => {
+          wsProvider.connect();
+          reconnectionsIndex++;
+          console.log(`Reconnection - #${reconnectionsIndex}`);
+        }, 500);
+      } else {
+        reconnectionsIndex = 0;
+        if (apiListeners) {
+          apiListeners.error(error);
+        }
+      }
+    };
+
+    /**
+     * We need setup websocket listeners "on" before running connection.
+     */
+
+    wsProvider.on('error', async error => {
+      console.log('AAA');
+      recoverConnection(error);
     });
+
+    wsProvider.on('connected', async () => {
+      if (api) return api;
+  
+      await new ApiPromise({
+        provider: wsProvider,
+        rpc: {
+          amm: {
+            getSpotPrice: {
+              description: 'Get spot price',
+              params: [
+                {
+                  name: 'asset1',
+                  type: 'AssetId',
+                },
+                {
+                  name: 'asset2',
+                  type: 'AssetId',
+                },
+                {
+                  name: 'amount',
+                  type: 'Balance',
+                },
+              ],
+              type: 'BalanceInfo',
+            },
+            getSellPrice: {
+              description: 'Get AMM sell price',
+              params: [
+                {
+                  name: 'asset1',
+                  type: 'AssetId',
+                },
+                {
+                  name: 'asset2',
+                  type: 'AssetId',
+                },
+                {
+                  name: 'amount',
+                  type: 'Balance',
+                },
+              ],
+              type: 'BalanceInfo',
+            },
+            getBuyPrice: {
+              description: 'Get AMM buy price',
+              params: [
+                {
+                  name: 'asset1',
+                  type: 'AssetId',
+                },
+                {
+                  name: 'asset2',
+                  type: 'AssetId',
+                },
+                {
+                  name: 'amount',
+                  type: 'Balance',
+                },
+              ],
+              type: 'BalanceInfo',
+            },
+          },
+        },
+        types: {
+          Amount: 'i128',
+          AmountOf: 'Amount',
+          Address: 'AccountId',
+          LookupSource: 'AccountId',
+          CurrencyId: 'AssetId',
+          CurrencyIdOf: 'AssetId',
+          BalanceInfo: {
+            amount: 'Balance',
+            assetId: 'AssetId',
+          },
+          IntentionID: 'Hash',
+          IntentionType: {
+            _enum: ['SELL', 'BUY'],
+          },
+          Intention: {
+            who: 'AccountId',
+            asset_sell: 'AssetId',
+            asset_buy: 'AssetId',
+            amount_sell: 'Balance',
+            amount_buy: 'Balance',
+            trade_limit: 'Balance',
+            discount: 'bool',
+            sell_or_buy: 'IntentionType',
+            intention_id: 'IntentionID',
+          },
+          Price: 'Balance',
+        },
+      })
+        .on('error', e => {
+          console.log('BBB');
+          if (!isDisconnection) {
+            console.log('ApiPromise - error ');
+            if (apiListeners) {
+              apiListeners.error(e);
+            }
+            reject(e);
+          }
+        })
+        .on('connected', () => {
+          console.log('CCC');
+          if (apiListeners) {
+            apiListeners.connected();
+          }
+          resolve('connected');
+          isDisconnection = false;
+        })
+        .on('disconnected', () => {
+          console.log('DDD');
+          /**
+           * This event happens when connection has been lost and each time, when
+           * connection attempt has been done with error.
+           */
+          if (!isDisconnection) {
+            if (apiListeners) {
+              apiListeners.disconnected();
+            }
+            reject();
+            isDisconnection = true;
+            wsProvider.connect();
+          }
+        })
+        .on('ready', apiInstance => {
+          console.log('EEE');
+          api = apiInstance;
+          api.hydraDx = {
+            query,
+            tx
+          };
+          if (apiListeners) {
+            apiListeners.ready(api);
+          }
+          resolve(api);
+        })
+        .isReadyOrError.then(apiResponse => {
+          console.log('FFF');
+          api = apiResponse;
+          api.hydraDx = {
+            query,
+            tx
+          };
+          if (apiListeners) {
+            apiListeners.connected(api);
+          }
+          resolve(api);
+        })
+        .catch(e => {
+          console.log('GGG');
+          if (apiListeners) {
+            apiListeners.error(e); 
+          }
+          reject(e);
+        });
+    });
+
+    wsProvider.connect();
   });
 };
 
