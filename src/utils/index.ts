@@ -13,7 +13,7 @@ const formatBalanceAmount = (balance: BN): AssetAmount => {
   const baseAmount = bnToBn(10).pow(bnDecimals.sub(bnToBn(4)));
   const inputAmount = balance.div(baseAmount).toNumber() / 10 ** 4;
   return {
-    amount: balance,
+    amount: new BigNumber(balance.toString()),
     inputAmount: inputAmount,
     amountFormatted: formatBalance(balance),
   };

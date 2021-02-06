@@ -1,4 +1,5 @@
 import BN from 'bn.js';
+import BigNumber from 'bignumber.js';
 import { ApiPromise } from '@polkadot/api';
 
 export type ApiListeners = {
@@ -9,14 +10,14 @@ export type ApiListeners = {
 };
 
 export type AssetAmount = {
-    amount: BN;
+    amount: BigNumber;
     inputAmount: number;
     amountFormatted: string;
 };
 
 export type AssetBalance = {
     assetId: number;
-    balance: BN;
+    balance: BigNumber;
     balanceFormatted: string;
     name?: string;
     shareToken?: boolean;

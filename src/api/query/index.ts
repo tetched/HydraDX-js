@@ -1,6 +1,7 @@
 import { bnToBn, formatBalance } from "@polkadot/util";
 import { AssetBalance, AssetRecord, PoolInfo, TokenTradeMap } from '../../types';
 import Api from '../../api';
+import BigNumber from "bignumber.js";
 
 
 async function syncAssetBalancesSMWallet(account: any) {
@@ -12,12 +13,14 @@ async function syncAssetBalancesSMWallet(account: any) {
       if (account && api) {
         const multiTokenInfo = await api.query.tokens.accounts.entries(account);
         const baseTokenInfo = await api.query.system.account(account);
-        const baseTokenBalance = bnToBn(baseTokenInfo.data.free);
+        // const baseTokenBalance = bnToBn(baseTokenInfo.data.free);
+        const baseTokenBalance = new BigNumber(baseTokenInfo.data.free.toString());
     
         balances[0] = {
           assetId: 0,
           balance: baseTokenBalance,
-          balanceFormatted: formatBalance(baseTokenBalance),
+          // balanceFormatted: formatBalance(baseTokenBalance),
+          balanceFormatted: baseTokenBalance.toString()
         };
         multiTokenInfo.forEach(record => {
           let assetId = 99999;
@@ -28,8 +31,10 @@ async function syncAssetBalancesSMWallet(account: any) {
           }
     
           const assetBalances = api.createType('AccountData', record[1]);
-          const balance = bnToBn(assetBalances.free);
-          const balanceFormatted = formatBalance(balance);
+          // const balance = bnToBn(assetBalances.free);
+          // const balanceFormatted = formatBalance(balance);
+          const balance = new BigNumber(assetBalances.free.toString());
+          const balanceFormatted = balance.toString();
     
           balances[assetId] = {
             assetId,
@@ -150,7 +155,8 @@ async function getSellPriceSMTrade(asset1: string, asset2: string, tradeAmount: 
       const api = Api.getApi();
     
       if (api) {
-          let amount = bnToBn(0);
+          // let amount = bnToBn(0);
+          let amount = new BigNumber(0);
   
           if (tradeAmount) {
               if (actionType === 'sell') {
