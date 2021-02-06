@@ -177,9 +177,7 @@ const initialize = async (apiListeners?: ApiListeners, apiUrl?: string, maxRetri
         },
       })
         .on('error', e => {
-          console.log('BBB');
           if (!isDisconnection) {
-            console.log('ApiPromise - error ');
             if (apiListeners) {
               apiListeners.error(e);
             }
@@ -187,7 +185,6 @@ const initialize = async (apiListeners?: ApiListeners, apiUrl?: string, maxRetri
           }
         })
         .on('connected', () => {
-          console.log('CCC');
           if (apiListeners) {
             apiListeners.connected();
           }
@@ -195,7 +192,6 @@ const initialize = async (apiListeners?: ApiListeners, apiUrl?: string, maxRetri
           isDisconnection = false;
         })
         .on('disconnected', () => {
-          console.log('DDD');
           /**
            * This event happens when connection has been lost and each time, when
            * connection attempt has been done with error.
@@ -210,7 +206,6 @@ const initialize = async (apiListeners?: ApiListeners, apiUrl?: string, maxRetri
           }
         })
         .on('ready', apiInstance => {
-          console.log('EEE');
           api = apiInstance;
           api.hydraDx = {
             query,
@@ -222,7 +217,6 @@ const initialize = async (apiListeners?: ApiListeners, apiUrl?: string, maxRetri
           resolve(api);
         })
         .isReadyOrError.then(apiResponse => {
-          console.log('FFF');
           api = apiResponse;
           api.hydraDx = {
             query,
@@ -234,7 +228,6 @@ const initialize = async (apiListeners?: ApiListeners, apiUrl?: string, maxRetri
           resolve(api);
         })
         .catch(e => {
-          console.log('GGG');
           if (apiListeners) {
             apiListeners.error(e); 
           }
