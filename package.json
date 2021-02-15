@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build" : "tsc"
+    "build" : "tsc",
+    "postinstall" : "npm run build"
   },
   "dependencies": {
     "@polkadot/api": "^3.3.2",
