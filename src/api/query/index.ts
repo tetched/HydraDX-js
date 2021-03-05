@@ -1,10 +1,9 @@
-import { bnToBn, formatBalance } from "@polkadot/util";
 import { AssetBalance, AssetRecord, PoolInfo, TokenTradeMap } from '../../types';
 import Api from '../../api';
 import BigNumber from "bignumber.js";
 
 
-async function syncAssetBalancesSMWallet(account: any) {
+async function getAccountBalances(account: any) {
   return new Promise(async (resolve, reject) => {
     try {
       const api = Api.getApi();
@@ -51,7 +50,7 @@ async function syncAssetBalancesSMWallet(account: any) {
   });
 }
 
-async function syncAssetListSMWallet() {
+async function getAssetList() {
   return new Promise(async (resolve, reject) => {
     try {
       const api = Api.getApi();
@@ -74,7 +73,7 @@ async function syncAssetListSMWallet() {
   });
 };
 
-async function syncPoolsSMPool() {
+async function getPoolInfo() {
   return new Promise(async (resolve, reject) => {
     try {
       const api = Api.getApi();
@@ -131,15 +130,20 @@ async function syncPoolsSMPool() {
     
 }
 
-async function getSpotPriceSMTrade(asset1: string, asset2: string) {
+async function getSpotPrice(asset1: string, asset2: string) {
+  const wasm = await import('hack-hydra-dx-wasm');
+
+  console.log(wasm);
+
   return new Promise(async (resolve, reject) => {
     try {
       const api = Api.getApi();
     
       if (api) {
-        // @ts-expect-error TS-2339
-        const amountData = await api.rpc.amm.getSpotPrice(asset1, asset2, 1000000000000);
-        const amount = amountData.amount;
+        const amount = await wasm.get_spot_price(asset1, asset2, '1000000000000');
+        // // @ts-expect-error TS-2339
+        // const amountData = await api.rpc.amm.getSpotPrice(asset1, asset2, 1000000000000);
+        // const amount = amountData.amount;
   
         resolve(amount);
       }
@@ -149,7 +153,11 @@ async function getSpotPriceSMTrade(asset1: string, asset2: string) {
   });
 };
 
-async function getSellPriceSMTrade(asset1: string, asset2: string, tradeAmount: any, actionType: string) {
+async function getTradePrice(asset1: string, asset2: string, tradeAmount: any, actionType: string) {
+  const wasm = await import('hack-hydra-dx-wasm');
+
+  console.log(wasm);
+
   return new Promise(async (resolve, reject) => {
     try {
       const api = Api.getApi();
@@ -160,13 +168,15 @@ async function getSellPriceSMTrade(asset1: string, asset2: string, tradeAmount: 
   
           if (tradeAmount) {
               if (actionType === 'sell') {
-                  // @ts-expect-error TS-2339
-                  const amountData = await api.rpc.amm.getSellPrice(asset1, asset2, tradeAmount);
-                  amount = amountData.amount;
+                  amount = new BigNumber(await wasm.get_sell_price(asset1, asset2, tradeAmount));
+                  // // @ts-expect-error TS-2339
+                  // const amountData = await api.rpc.amm.getSellPrice(asset1, asset2, tradeAmount);
+                  // amount = amountData.amount;
               } else {
-                  // @ts-expect-error TS-2339
-                  const amountData = await api.rpc.amm.getBuyPrice(asset1, asset2, tradeAmount);
-                  amount = amountData.amount;
+                  amount = new BigNumber(await wasm.get_buy_price(asset1, asset2, tradeAmount));
+                  // // @ts-expect-error TS-2339
+                  // const amountData = await api.rpc.amm.getBuyPrice(asset1, asset2, tradeAmount);
+                  // amount = amountData.amount;
               }
           }
           resolve(amount);
@@ -179,9 +189,9 @@ async function getSellPriceSMTrade(asset1: string, asset2: string, tradeAmount: 
 
 
 export {
-    syncAssetBalancesSMWallet,
-    syncAssetListSMWallet,
-    syncPoolsSMPool,
-    getSpotPriceSMTrade,
-    getSellPriceSMTrade,
+    getAccountBalances,
+    getAssetList,
+    getPoolInfo,
+    getSpotPrice,
+    getTradePrice,
 }

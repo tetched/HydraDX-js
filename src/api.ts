@@ -1,10 +1,5 @@
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { Signer } from '@polkadot/api/types';
-import {
-  web3Enable,
-  web3AccountsSubscribe,
-  web3FromAddress,
-} from '@polkadot/extension-dapp';
 import { InjectedAccountWithMeta } from '@polkadot/extension-inject/types';
 
 import { ApiListeners } from './types';
@@ -20,11 +15,6 @@ let api: HydraApiPromise;
 
 const getApi = (): HydraApiPromise => {
   return api;
-};
-
-const getSinger = async (account: string): Promise<Signer> => {
-  const injector = await web3FromAddress(account);
-  return injector.signer;
 };
 
 const syncWallets = async (

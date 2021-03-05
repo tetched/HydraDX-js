@@ -2,36 +2,6 @@ import Api from '../../api';
 import { bnToBn, formatBalance } from "@polkadot/util";
 import { bnToDec, decToBn } from '../../utils';
 
-async function mintAssetSMWallet(account: any, assetId: any) {
-    const api = Api.getApi();
-
-    if (api && account) {
-        const signer = await Api.getSinger(account);
-        api.tx.faucet
-        .mint(assetId, 100000000000000)
-        .signAndSend(account, { signer: signer }, ({ events, status }) => {
-            if (status.isReady) return Promise.resolve();
-            // TODO:STUFF
-        });
-    }
-}
-
-async function addLiquiditySMPool(account: string, asset1: string, asset2: string, amount: any, spotPrice: number) {
-    return new Promise(async (resolve) => {
-        const api = Api.getApi();
-        const maxSellPrice = decToBn(bnToDec(amount).multipliedBy(spotPrice * 1.1));
-    
-        if (api && account) {
-          const signer = await Api.getSinger(account);
-          api.tx.amm
-            .addLiquidity(asset1, asset2, amount, maxSellPrice)
-            .signAndSend(account, { signer: signer }, ({ status }) => {
-                resolve(status);
-            });
-        }
-    });
-}
-
 async function withdrawLiquiditySMPool(account: string, asset1: string, asset2: string, liquidityBalance: any, selectedPool: any, percentage: number) {
     return new Promise(async (resolve) => {
         const api = Api.getApi();
@@ -83,8 +53,6 @@ async function swapSMTrade(account: string, asset1: string, asset2: string, amou
 };
 
 export {
-    mintAssetSMWallet,
-    addLiquiditySMPool,
     withdrawLiquiditySMPool,
     swapSMTrade
 }
