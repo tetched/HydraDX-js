@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "build": "tsc",
-    "postinstall": "npm run build"
+    "postinstall": "npm install && npm run build"
   },
   "dependencies": {
     "@polkadot/api": "^3.3.2",
