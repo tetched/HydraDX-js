@@ -17,21 +17,6 @@ const getApi = (): HydraApiPromise => {
   return api;
 };
 
-const syncWallets = async (
-  updateFunction: (accounts: InjectedAccountWithMeta[]) => void
-): Promise<null> => {
-  // returns an array of all the injected sources
-  // (this needs to be called first, before other requests)
-  const allInjected = await web3Enable('HACK.HydraDX.io');
-
-  if (!allInjected.length) {
-    return null;
-  } else {
-    web3AccountsSubscribe(updateFunction);
-    return null;
-  }
-};
-
 const initialize = async (apiListeners?: ApiListeners, apiUrl?: string, maxRetries: number = 20): Promise<HydraApiPromise> => {
   return new Promise<any>(async (resolve, reject) => {
     const local =
@@ -231,7 +216,5 @@ const initialize = async (apiListeners?: ApiListeners, apiUrl?: string, maxRetri
 
 export default {
   initialize,
-  syncWallets,
   getApi,
-  getSinger,
 };
