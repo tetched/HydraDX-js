@@ -2,6 +2,10 @@ import BN from 'bn.js';
 import BigNumber from 'bignumber.js';
 import { ApiPromise } from '@polkadot/api';
 
+export interface HydraApiPromise extends ApiPromise {
+    hydraDx?: any,
+}
+
 export type ApiListeners = {
     error: (e: Error) => void;
     connected: (api?: ApiPromise) => void;

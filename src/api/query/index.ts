@@ -133,8 +133,6 @@ async function getPoolInfo() {
 async function getSpotPrice(asset1: string, asset2: string) {
   const wasm = await import('hack-hydra-dx-wasm');
 
-  console.log(wasm);
-
   return new Promise(async (resolve, reject) => {
     try {
       const api = Api.getApi();
@@ -155,8 +153,6 @@ async function getSpotPrice(asset1: string, asset2: string) {
 
 async function getTradePrice(asset1: string, asset2: string, tradeAmount: any, actionType: string) {
   const wasm = await import('hack-hydra-dx-wasm');
-
-  console.log(wasm);
 
   return new Promise(async (resolve, reject) => {
     try {
