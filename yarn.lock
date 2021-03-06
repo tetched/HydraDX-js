@@ -432,9 +432,6 @@ form-data@^3.0.0:
     combined-stream "^1.0.8"
     mime-types "^2.1.12"
 
-"hack-hydra-dx-wasm@file:../HydraDX-wasm":
-  version "0.1.0"
-
 "hack-hydra-dx-wasm@git+https://github.com/galacticcouncil/HydraDX-wasm#wasm-repo-importable":
   version "0.1.0"
   resolved "git+https://github.com/galacticcouncil/HydraDX-wasm#0ab073314da124970c4d31b35d3f4f411856831e"
