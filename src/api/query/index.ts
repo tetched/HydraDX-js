@@ -12,7 +12,6 @@ async function getAccountBalances(account: any) {
       if (account && api) {
         const multiTokenInfo = await api.query.tokens.accounts.entries(account);
         const baseTokenInfo = await api.query.system.account(account);
-        // const baseTokenBalance = bnToBn(baseTokenInfo.data.free);
         const baseTokenBalance = new BigNumber(baseTokenInfo.data.free.toString());
     
         balances[0] = {
@@ -139,10 +138,6 @@ async function getSpotPrice(asset1: string, asset2: string) {
     
       if (api) {
         const amount = await wasm.get_spot_price(asset1, asset2, '1000000000000');
-        // // @ts-expect-error TS-2339
-        // const amountData = await api.rpc.amm.getSpotPrice(asset1, asset2, 1000000000000);
-        // const amount = amountData.amount;
-  
         resolve(amount);
       }
     } catch(e) {
@@ -165,14 +160,8 @@ async function getTradePrice(asset1: string, asset2: string, tradeAmount: any, a
           if (tradeAmount) {
               if (actionType === 'sell') {
                   amount = new BigNumber(await wasm.get_sell_price(asset1, asset2, tradeAmount));
-                  // // @ts-expect-error TS-2339
-                  // const amountData = await api.rpc.amm.getSellPrice(asset1, asset2, tradeAmount);
-                  // amount = amountData.amount;
               } else {
                   amount = new BigNumber(await wasm.get_buy_price(asset1, asset2, tradeAmount));
-                  // // @ts-expect-error TS-2339
-                  // const amountData = await api.rpc.amm.getBuyPrice(asset1, asset2, tradeAmount);
-                  // amount = amountData.amount;
               }
           }
           resolve(amount);

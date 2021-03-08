@@ -1,7 +1,6 @@
 import { ApiPromise, WsProvider } from '@polkadot/api';
 
 import { ApiListeners, HydraApiPromise } from './types';
-import RpcConfig from './config/rpc';
 import TypeConfig from './config/type';
 
 import * as query from './api/query';
@@ -49,7 +48,6 @@ const initialize = async (apiListeners?: ApiListeners, apiUrl?: string, maxRetri
      */
 
     wsProvider.on('error', async error => {
-      console.log('AAA');
       recoverConnection(error);
     });
 
@@ -58,7 +56,6 @@ const initialize = async (apiListeners?: ApiListeners, apiUrl?: string, maxRetri
   
       await new ApiPromise({
         provider: wsProvider,
-        rpc: RpcConfig,
         types: TypeConfig,
       })
         .on('error', e => {
