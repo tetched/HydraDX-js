@@ -7,10 +7,10 @@ export interface HydraApiPromise extends ApiPromise {
 }
 
 export type ApiListeners = {
-    error: (e: Error) => void;
-    connected: (api?: ApiPromise) => void;
-    disconnected: () => void;
-    ready: (api?: ApiPromise) => void;
+    error?: (e: Error) => void;
+    connected?: (api?: ApiPromise) => void;
+    disconnected?: () => void;
+    ready?: (api?: ApiPromise) => void;
 };
 
 export type AssetAmount = {

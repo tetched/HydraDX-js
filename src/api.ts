@@ -3,24 +3,16 @@ import { ApiPromise, WsProvider } from '@polkadot/api';
 import { ApiListeners, HydraApiPromise } from './types';
 import TypeConfig from './config/type';
 
-import * as query from './api/query';
-import * as tx from './api/tx';
+import * as query from './methods/query';
+import * as tx from './methods/tx';
 
 let api: HydraApiPromise;
 
 const getApi = (): HydraApiPromise => api;
 
-const initialize = async (apiListeners?: ApiListeners, apiUrl?: string, maxRetries: number = 20): Promise<HydraApiPromise> => {
+const initialize = async (apiListeners?: ApiListeners, apiUrl: string = 'ws://127.0.0.1:9944', maxRetries: number = 20): Promise<HydraApiPromise> => {
   return new Promise<any>(async (resolve, reject) => {
-    const local =
-      window.location.hostname === '127.0.0.1' ||
-      window.location.hostname === 'localhost';
-
-    const serverAddress = local
-      ? 'ws://127.0.0.1:9944'
-      : (apiUrl || 'wss://hack.hydradx.io:9944');
-
-    const wsProvider = new WsProvider(serverAddress, false);
+    const wsProvider = new WsProvider(apiUrl, false);
     let reconnectionsIndex = 0;
     let isDisconnection  = false;
 
@@ -37,7 +29,7 @@ const initialize = async (apiListeners?: ApiListeners, apiUrl?: string, maxRetri
         }, 500);
       } else {
         reconnectionsIndex = 0;
-        if (apiListeners) {
+        if (apiListeners && apiListeners.error) {
           apiListeners.error(error);
         }
       }
@@ -52,7 +44,10 @@ const initialize = async (apiListeners?: ApiListeners, apiUrl?: string, maxRetri
     });
 
     wsProvider.on('connected', async () => {
-      if (api) return api;
+      if (api) {
+        resolve(api);
+        return api;
+      }
   
       await new ApiPromise({
         provider: wsProvider,
@@ -60,17 +55,17 @@ const initialize = async (apiListeners?: ApiListeners, apiUrl?: string, maxRetri
       })
         .on('error', e => {
           if (!isDisconnection) {
-            if (apiListeners) {
+            if (apiListeners && apiListeners.error) {
               apiListeners.error(e);
             }
             reject(e);
           }
         })
         .on('connected', () => {
-          if (apiListeners) {
+          if (apiListeners && apiListeners.connected) {
             apiListeners.connected();
           }
-          resolve('connected');
+          // resolve('connected');
           isDisconnection = false;
         })
         .on('disconnected', () => {
@@ -79,7 +74,7 @@ const initialize = async (apiListeners?: ApiListeners, apiUrl?: string, maxRetri
            * connection attempt has been done with error.
            */
           if (!isDisconnection) {
-            if (apiListeners) {
+            if (apiListeners && apiListeners.disconnected) {
               apiListeners.disconnected();
             }
             reject();
@@ -93,7 +88,7 @@ const initialize = async (apiListeners?: ApiListeners, apiUrl?: string, maxRetri
             query,
             tx
           };
-          if (apiListeners) {
+          if (apiListeners && apiListeners.ready) {
             apiListeners.ready(api);
           }
           resolve(api);
@@ -104,13 +99,13 @@ const initialize = async (apiListeners?: ApiListeners, apiUrl?: string, maxRetri
             query,
             tx
           };
-          if (apiListeners) {
+          if (apiListeners && apiListeners.connected) {
             apiListeners.connected(api);
           }
           resolve(api);
         })
         .catch(e => {
-          if (apiListeners) {
+          if (apiListeners && apiListeners.error) {
             apiListeners.error(e); 
           }
           reject(e);
