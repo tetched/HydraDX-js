@@ -2,27 +2,28 @@ export default {
   Amount: 'i128',
   AmountOf: 'Amount',
   Address: 'AccountId',
-  LookupSource: 'AccountId',
-  CurrencyId: 'AssetId',
-  CurrencyIdOf: 'AssetId',
   BalanceInfo: {
     amount: 'Balance',
-    assetId: 'AssetId',
+    assetId: 'AssetId'
   },
-  IntentionID: 'Hash',
-  IntentionType: {
-    _enum: ['SELL', 'BUY'],
-  },
+  CurrencyId: 'AssetId',
+  CurrencyIdOf: 'AssetId',
   Intention: {
     who: 'AccountId',
     asset_sell: 'AssetId',
     asset_buy: 'AssetId',
-    amount_sell: 'Balance',
-    amount_buy: 'Balance',
-    trade_limit: 'Balance',
+    amount: 'Balance',
     discount: 'bool',
-    sell_or_buy: 'IntentionType',
-    intention_id: 'IntentionID',
+    sell_or_buy: 'IntentionType'
   },
-  Price: 'Balance',
+  IntentionId: 'u128',
+  IntentionType: {
+    _enum: [
+      'SELL',
+      'BUY'
+    ]
+  },
+  LookupSource: 'AccountId',
+  OrderedSet: 'Vec<AssetId>',
+  Price: 'Balance'
 }
