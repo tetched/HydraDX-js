@@ -147,8 +147,6 @@ async function getSpotPrice(asset1: string, asset2: string) {
 };
 
 async function getTradePrice(asset1: string, asset2: string, tradeAmount: any, actionType: string) {
-  const { get_sell_price, get_buy_price } = await import('hack-hydra-dx-wasm');
-
   return new Promise(async (resolve, reject) => {
     try {
       const api = Api.getApi();
@@ -159,9 +157,9 @@ async function getTradePrice(asset1: string, asset2: string, tradeAmount: any, a
   
           if (tradeAmount) {
               if (actionType === 'sell') {
-                  amount = new BigNumber(await get_sell_price(asset1, asset2, tradeAmount));
+                  amount = new BigNumber(await wasm.get_sell_price(asset1, asset2, tradeAmount));
               } else {
-                  amount = new BigNumber(await get_buy_price(asset1, asset2, tradeAmount));
+                  amount = new BigNumber(await wasm.get_buy_price(asset1, asset2, tradeAmount));
               }
           }
           resolve(amount);
