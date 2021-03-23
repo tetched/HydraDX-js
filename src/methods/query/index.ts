@@ -1,7 +1,7 @@
 import { AssetBalance, AssetRecord, PoolInfo, TokenTradeMap } from '../../types';
 import Api from '../../api';
 import BigNumber from "bignumber.js";
-import init, * as wasm from 'hack-hydra-dx-wasm/build/web';
+import init, * as wasm from 'hack-hydra-dx-wasm/build/web/hack_hydra_dx_wasm';
 
 init();
 
