@@ -1,7 +1,7 @@
 import { AssetBalance, AssetRecord, PoolInfo, TokenTradeMap } from '../../types';
 import Api from '../../api';
 import BigNumber from "bignumber.js";
-import wasm from 'hack-hydra-dx-wasm';
+import wasm from 'hack-hydra-dx-wasm/build/web';
 
 async function getAccountBalances(account: any) {
   return new Promise(async (resolve, reject) => {
