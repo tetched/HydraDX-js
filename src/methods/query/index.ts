@@ -1,7 +1,7 @@
 import { AssetBalance, AssetRecord, PoolInfo, TokenTradeMap } from '../../types';
 import Api from '../../api';
 import BigNumber from "bignumber.js";
-import init, { get_spot_price } from 'hack-hydra-dx-wasm/build/web';
+import init, * as wasm from 'hack-hydra-dx-wasm/build/web';
 
 init();
 
@@ -132,14 +132,12 @@ async function getPoolInfo() {
 }
 
 async function getSpotPrice(asset1: string, asset2: string) {
-  // const wasm = await import('hack-hydra-dx-wasm');
-
   return new Promise(async (resolve, reject) => {
     try {
       const api = Api.getApi();
     
       if (api) {
-        const amount = await get_spot_price(asset1, asset2, '1000000000000');
+        const amount = await wasm.get_spot_price(asset1, asset2, '1000000000000');
         resolve(amount);
       }
     } catch(e) {
