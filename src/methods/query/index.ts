@@ -1,13 +1,19 @@
 import { AssetBalance, AssetRecord, PoolInfo, TokenTradeMap } from '../../types';
 import Api from '../../api';
 import BigNumber from "bignumber.js";
+import { import_wasm } from '../../utils/import_wasm';
 
 let wasm: any;
 
 async function initialize() {
   if (typeof window !== 'undefined') {
-    wasm = await import('hack-hydra-dx-wasm/build/web');
-    wasm.default();
+    if (typeof process.env.NODE_ENV === "undefined") {
+      wasm = await import('hack-hydra-dx-wasm/build/web');
+      wasm.default();
+    } else {
+      wasm = await import_wasm();
+    }
+    
   } else {
     wasm = await import('hack-hydra-dx-wasm/build/nodejs');
   }
