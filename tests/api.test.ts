@@ -10,8 +10,8 @@ test('API object should be undefined at first', () => {
   expect(api).toBe(undefined);
 });
 
-test('API object should be defined after initialize', async () => {
-  api = await Api.initialize({}, 'wss://rpc-01.snakenet.hydradx.io');
+it('API object should be defined after initialize', async () => {
+  api = await Api.initialize({}, process.env.WS_URL);
   expect(api).toBeDefined();
 });
 
@@ -30,12 +30,12 @@ test('Test getPoolInfo', async () => {
   expect(poolInfo).toBeDefined();
 });
 
-// test('Test getSpotPrice', async () => {
-//   const spotPrice = await api.hydraDx.query.getSpotPrice('HDX', 'tKSM');
-//   expect(spotPrice).toBeDefined();
-// });
+test('Test getSpotPrice', async () => {
+  const spotPrice = await api.hydraDx.query.getSpotPrice('HDX', 'tKSM');
+  expect(spotPrice).toBeDefined();
+});
 
-// test('Test getTradePrice', async () => {
-//   const tradePrice = await api.hydraDx.query.getTradePrice('HDX', 'tKSM', 100000000, 'sell');
-//   expect(tradePrice).toBeDefined();
-// });
+test('Test getTradePrice', async () => {
+  const tradePrice = await api.hydraDx.query.getTradePrice('HDX', 'tKSM', '100000000', 'sell');
+  expect(tradePrice).toBeDefined();
+});

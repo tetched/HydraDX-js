@@ -1,7 +1,6 @@
 import { AssetBalance, AssetRecord, PoolInfo, TokenTradeMap } from '../../types';
 import Api from '../../api';
 import BigNumber from "bignumber.js";
-import { import_wasm } from '../../utils/import_wasm';
 
 let wasm: any;
 
@@ -11,6 +10,7 @@ async function initialize() {
       wasm = await import('hack-hydra-dx-wasm/build/web');
       wasm.default();
     } else {
+      const { import_wasm } = await import('../../utils/import_wasm');
       wasm = await import_wasm();
     }
     

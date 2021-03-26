@@ -5,7 +5,7 @@ let api: HydraApiPromise;
 let HydraAccount = '5EKq4zjH8skHctyTS5QGaQYQnw3xyPW6cqkAPLPhwiap62DQ';
 
 test('Test getPoolInfo structure', async () => {
-  api = await Api.initialize({}, 'wss://rpc-01.snakenet.hydradx.io');
+  api = await Api.initialize({}, process.env.WS_URL);
   const getPoolInfo = await api.hydraDx.query.getPoolInfo(HydraAccount);
   
   expect(getPoolInfo).toEqual(
