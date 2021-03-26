@@ -1,6 +1,7 @@
 import { AssetBalance, AssetRecord, PoolInfo, TokenTradeMap } from '../../types';
 import Api from '../../api';
 import BigNumber from "bignumber.js";
+import { getAssetsAmounts } from '../../utils/index';
 
 let wasm: any;
 
@@ -147,13 +148,23 @@ async function getPoolInfo() {
     
 }
 
-async function getSpotPrice(asset1: string, asset2: string) {
+async function getSpotPrice(asset1Id: string, asset2Id: string) {
   return new Promise(async (resolve, reject) => {
     try {
       const api = Api.getApi();
     
       if (api) {
-        const amount = new BigNumber(await wasm.get_spot_price(asset1, asset2, '1000000000000'));
+
+        const assetsAmounts = await getAssetsAmounts(asset1Id, asset2Id);
+
+        if (
+            assetsAmounts === null ||
+            assetsAmounts.asset1 === null ||
+            assetsAmounts.asset2 === null
+        )
+          return;
+
+        const amount = new BigNumber(await wasm.get_spot_price(assetsAmounts.asset1, assetsAmounts.asset2, '1000000000000'));
         resolve(amount);
       }
     } catch(e) {
@@ -162,7 +173,7 @@ async function getSpotPrice(asset1: string, asset2: string) {
   });
 };
 
-async function getTradePrice(asset1: string, asset2: string, tradeAmount: any, actionType: string) {
+async function getTradePrice(asset1Id: string, asset2Id: string, tradeAmount: string, actionType: string) {
   return new Promise(async (resolve, reject) => {
     try {
       const api = Api.getApi();
@@ -172,10 +183,20 @@ async function getTradePrice(asset1: string, asset2: string, tradeAmount: any, a
           let amount = new BigNumber(0);
   
           if (tradeAmount) {
+
+              const assetsAmounts = await getAssetsAmounts(asset1Id, asset2Id);
+
+              if (
+                  assetsAmounts === null ||
+                  assetsAmounts.asset1 === null ||
+                  assetsAmounts.asset2 === null
+              )
+                return;
+
               if (actionType === 'sell') {
-                  amount = new BigNumber(await wasm.get_sell_price(asset1, asset2, tradeAmount));
+                  amount = new BigNumber(await wasm.get_sell_price(assetsAmounts.asset1, assetsAmounts.asset2, tradeAmount));
               } else {
-                  amount = new BigNumber(await wasm.get_buy_price(asset1, asset2, tradeAmount));
+                  amount = new BigNumber(await wasm.get_buy_price(assetsAmounts.asset1, assetsAmounts.asset2, tradeAmount));
               }
           }
           resolve(amount);
