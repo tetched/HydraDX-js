@@ -31,11 +31,11 @@ test('Test getPoolInfo', async () => {
 });
 
 test('Test getSpotPrice', async () => {
-  const spotPrice = await api.hydraDx.query.getSpotPrice('HDX', 'tKSM');
+  const spotPrice = await api.hydraDx.query.getSpotPrice('1000', '2000', '500');
   expect(spotPrice).toBeDefined();
 });
 
 test('Test getTradePrice', async () => {
-  const tradePrice = await api.hydraDx.query.getTradePrice('HDX', 'tKSM', '100000000', 'sell');
+  const tradePrice = await api.hydraDx.query.getTradePrice('1000', '2000', '500', 'sell');
   expect(tradePrice).toBeDefined();
 });

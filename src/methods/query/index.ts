@@ -147,14 +147,14 @@ async function getPoolInfo() {
     
 }
 
-async function getSpotPrice(asset1: string, asset2: string) {
+async function getSpotPrice(asset1: string, asset2: string, amount: string) {
   return new Promise(async (resolve, reject) => {
     try {
       const api = Api.getApi();
     
       if (api) {
-        const amount = new BigNumber(await wasm.get_spot_price(asset1, asset2, '1000000000000'));
-        resolve(amount);
+        const price = new BigNumber(await wasm.get_spot_price(asset1, asset2, amount));
+        resolve(price);
       }
     } catch(e) {
       reject(e);
@@ -174,7 +174,7 @@ async function getTradePrice(asset1: string, asset2: string, tradeAmount: any, a
           if (tradeAmount) {
               if (actionType === 'sell') {
                   amount = new BigNumber(await wasm.get_sell_price(asset1, asset2, tradeAmount));
-              } else {
+              } else if (actionType === 'buy') {
                   amount = new BigNumber(await wasm.get_buy_price(asset1, asset2, tradeAmount));
               }
           }
