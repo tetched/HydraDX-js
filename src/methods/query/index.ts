@@ -292,12 +292,11 @@ const getPoolAssetsAmounts = async (
   }
 
   const asset1Amount = await getTokenAmount(currentPoolId, asset1Id);
-
   const asset2Amount = await getTokenAmount(currentPoolId, asset2Id);
 
   return {
-    asset1: asset1Amount ? asset1Amount.toString() : null,
-    asset2: asset2Amount ? asset2Amount.toString() : null,
+    asset1: asset1Amount !== null ? asset1Amount.toString() : null,
+    asset2: asset2Amount !== null ? asset2Amount.toString() : null,
     accountAddress: currentPoolId,
   };
 };
