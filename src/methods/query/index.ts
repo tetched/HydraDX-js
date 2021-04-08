@@ -2,7 +2,9 @@ import type { Codec } from '@polkadot/types/types';
 import type { Balance } from '@polkadot/types/interfaces/runtime';
 import BigNumber from "bignumber.js";
 import { AssetBalance, AssetRecord, PoolInfo, TokenTradeMap } from '../../types';
+import { bnToDec, decToBn } from '../../utils';
 import Api from '../../api';
+
 
 interface AccountAmount extends Codec {
   free?: Balance;
@@ -218,18 +220,18 @@ async function getTradePrice(asset1Id: string, asset2Id: string, tradeAmount: st
 const getTokenAmount = async (
   accountId: string,
   assetId: string
-): Promise<number | null> => {
+): Promise<BigNumber | null> => {
   const api = Api.getApi();
   if (!api) return null;
 
   if (assetId === '0') {
-    return (await api.query.system.account(accountId)).data.free.toNumber();
+    return bnToDec((await api.query.system.account(accountId)).data.free);
   } else {
     const amount: AccountAmount = await api.query.tokens.accounts(
         accountId,
         assetId
     );
-    return amount.free ? amount.free.toNumber() : null;
+    return amount.free ? bnToDec(amount.free) : null;
   }
 };
 
