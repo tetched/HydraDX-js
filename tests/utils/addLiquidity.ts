@@ -1,18 +1,17 @@
 import { HydraApiPromise } from '../../src/types';
 import { KeyringPair } from '@polkadot/keyring/types';
 
-export const createPool = (api: HydraApiPromise, keyring: KeyringPair, assetId1: string, assetId2: string, amount: string, initialPrice: string) => {
+export const addLiquidity = (api: HydraApiPromise, keyring: KeyringPair, assetId1: string, assetId2: string, amount: string, maxSellPrice: string) => {
   let account = '';
 
   return new Promise<string>(async (resolve, reject) => {
-    const unsub = await api.tx.amm.createPool(assetId1, assetId2, amount, initialPrice)
+    const unsub = await api.tx.amm.addLiquidity(assetId1, assetId2, amount, maxSellPrice)
       .signAndSend(keyring, ({ events = [], status }) => {
         if (status.isFinalized) {
           unsub();
           resolve(account);
         } else if (status.isInBlock) {
           events.forEach(({ event: { data, method, section }, phase }) => {
-            console.log('\t', phase.toString(), `: ${section}.${method}`, data.toString());
             if (section === 'system' && method === 'NewAccount') {
               account = data[0].toString();
             }
