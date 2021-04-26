@@ -1,29 +1,37 @@
 export default {
-  Amount: 'i128',
-  AmountOf: 'Amount',
-  Address: 'AccountId',
-  BalanceInfo: {
-    amount: 'Balance',
-    assetId: 'AssetId'
+  "AssetPair": {
+    "asset_in": "AssetId",
+    "asset_out": "AssetId"
   },
-  CurrencyId: 'AssetId',
-  CurrencyIdOf: 'AssetId',
-  Intention: {
-    who: 'AccountId',
-    asset_sell: 'AssetId',
-    asset_buy: 'AssetId',
-    amount: 'Balance',
-    discount: 'bool',
-    sell_or_buy: 'IntentionType'
+  "Amount": "i128",
+  "AmountOf": "Amount",
+  "Address": "AccountId",
+  "BalanceInfo": {
+    "amount": "Balance",
+    "assetId": "AssetId"
   },
-  IntentionId: 'u128',
-  IntentionType: {
-    _enum: [
-      'SELL',
-      'BUY'
+  "Chain": {
+    "genesisHash": "Vec<u8>",
+    "lastBlockHash": "Vec<u8>"
+  },
+  "CurrencyId": "AssetId",
+  "CurrencyIdOf": "AssetId",
+  "Intention": {
+    "who": "AccountId",
+    "asset_sell": "AssetId",
+    "asset_buy": "AssetId",
+    "amount": "Balance",
+    "discount": "bool",
+    "sell_or_buy": "IntentionType"
+  },
+  "IntentionId": "u128",
+  "IntentionType": {
+    "_enum": [
+      "SELL",
+      "BUY"
     ]
   },
-  LookupSource: 'AccountId',
-  OrderedSet: 'Vec<AssetId>',
-  Price: 'Balance'
+  "LookupSource": "AccountId",
+  "OrderedSet": "Vec<AssetId>",
+  "Price": "Balance"
 }

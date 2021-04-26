@@ -12,7 +12,6 @@ export const createPool = (api: HydraApiPromise, keyring: KeyringPair, assetId1:
           resolve(account);
         } else if (status.isInBlock) {
           events.forEach(({ event: { data, method, section }, phase }) => {
-            console.log('\t', phase.toString(), `: ${section}.${method}`, data.toString());
             if (section === 'system' && method === 'NewAccount') {
               account = data[0].toString();
             }

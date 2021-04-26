@@ -9,7 +9,7 @@ test('Test getAssetList structure', async () => {
   const alice = getAliceAccount();
   const assetList = await api.hydraDx.query.getAssetList(alice.address);
   
-  expect(assetList).toEqual(
+  expect(assetList.slice(0, 11)).toEqual(
     [
       {
         assetId: 0,
