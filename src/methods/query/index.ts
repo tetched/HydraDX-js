@@ -36,4 +36,5 @@ export { getFreeTokenAmount } from './getFreeTokenAmount';
 export { getReservedTokenAmount } from './getReservedTokenAmount';
 export { getFrozenFeeTokenAmount } from './getFrozenFeeTokenAmount';
 export { getMiscFrozenTokenAmount } from './getMiscFrozenTokenAmount';
-export { subscribeToEvents } from './subscribeToEvents';
+
+
