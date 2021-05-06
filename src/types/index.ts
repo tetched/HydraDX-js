@@ -42,3 +42,13 @@ export type PoolInfo = {
 };
 
 export type TokenTradeMap = { [key: number]: number[] };
+
+export type ChainEventCallback = ({
+   id,
+   index,
+   progress,
+}: {
+    id: string;
+    index?: number;
+    progress: number;
+}) => void;

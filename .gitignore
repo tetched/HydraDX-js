@@ -2,3 +2,4 @@ node_modules
 /lib
 jest.env.js
 .idea
+.prettierrc.json

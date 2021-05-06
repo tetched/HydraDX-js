@@ -1,19 +1,21 @@
 import Api from '../../api';
+import { processChainEvent } from '../../utils/apiUtils';
+import { ChainEventCallback } from '../../types';
 
 export const txCallback = (
-  resolve: any, 
-  reject: any
-) => ({ 
-  dispatchError, 
-  dispatchInfo, 
-  events,
-  status
-}: any) => {
+  resolve: any,
+  reject: any,
+  currentIndex?: number,
+  eventCallback?: ChainEventCallback
+) => ({ dispatchError, dispatchInfo, events, status }: any) => {
   const api = Api.getApi();
 
+  if (currentIndex !== undefined && eventCallback !== undefined)
+    processChainEvent({ events, status, currentIndex }, eventCallback);
+
   if (status.isFinalized) {
-    const successEvents : any[] = [];
-    const errorEvents : any[] = [];
+    const successEvents: any[] = [];
+    const errorEvents: any[] = [];
 
     events.forEach((event: any) => {
       if (api.events.system.ExtrinsicSuccess.is(event.event)) {
@@ -29,14 +31,15 @@ export const txCallback = (
         let errorInfo;
 
         if (dispatchError.isModule) {
-          const { documentation, section, name } = api.registry.findMetaError(dispatchError.asModule);
-          
+          const { documentation, section, name } = api.registry.findMetaError(
+            dispatchError.asModule
+          );
+
           errorInfo = {
             section,
             name,
             documentation: documentation.join(' '),
           };
-
         } else {
           errorInfo = dispatchError.toString();
         }
@@ -46,10 +49,13 @@ export const txCallback = (
 
       reject({
         type: 'ExtrinsicFailed',
-        data: errorData 
+        data: errorData,
       });
     } else {
-      const successData = (successEvents.length > 0 ? successEvents : events).map(({ event: {section, method, data} }: any) => {
+      const successData = (successEvents.length > 0
+        ? successEvents
+        : events
+      ).map(({ event: { section, method, data } }: any) => {
         const [dispatchInfo] = data;
 
         return {
@@ -58,19 +64,15 @@ export const txCallback = (
           dispatchInfo: dispatchInfo.toString(),
         };
       });
-      
+
       resolve({
-        data: successData 
+        data: successData,
       });
     }
   }
-}
+};
 
-export const txCatch = (
-  reject: any
-) => (
-  error: any
-) => {
+export const txCatch = (reject: any) => (error: any) => {
   reject({
     type: 'Error',
     data: error.message,
