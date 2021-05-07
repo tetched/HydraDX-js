@@ -13,7 +13,7 @@ export const txCallback = (
   if (currentIndex !== undefined && eventCallback !== undefined)
     processChainEvent({ events, status, currentIndex }, eventCallback);
 
-  if (status.isFinalized) {
+  if (status.isInBlock) {
     const successEvents: any[] = [];
     const errorEvents: any[] = [];
 
