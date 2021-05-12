@@ -3,14 +3,15 @@ import { bnToBn } from '@polkadot/util';
 import BigNumber from 'bignumber.js';
 import { AddressOrPair, Signer } from '@polkadot/api/types';
 import { txCallback, txCatch } from './_callback';
-import { ChainEventCallback } from '../../types';
+import { ChainEventCallback, TradeTransaction } from '../../types';
 
 export function swap({
   asset1Id,
   asset2Id,
   amount,
+  expectedOut,
   actionType,
-  currentIndex,
+  slippage = new BigNumber('100000000000000000'),
   account,
   signer,
   eventCallback,
@@ -18,8 +19,9 @@ export function swap({
   asset1Id: string;
   asset2Id: string;
   amount: BigNumber;
+  expectedOut: string;
   actionType: string;
-  currentIndex: number;
+  slippage: BigNumber;
   account: AddressOrPair;
   signer?: Signer;
   eventCallback: ChainEventCallback;
@@ -35,7 +37,7 @@ export function swap({
         asset1Id,
         asset2Id,
         bnToBn(amount.toString()),
-        bnToBn('100000000000000000'),
+        bnToBn(slippage.toString()),
         false
       );
   } else {
@@ -45,7 +47,7 @@ export function swap({
         asset1Id,
         asset2Id,
         bnToBn(amount.toString()),
-        bnToBn('100000000000000000'),
+        bnToBn(slippage.toString()),
         false
       );
   }
@@ -55,12 +57,12 @@ export function swap({
       result = tx.signAndSend(
         account,
         { signer },
-        txCallback(resolve, reject, currentIndex, eventCallback)
+        txCallback(resolve, reject, 'exchange')
       );
     } else {
       result = tx.signAndSend(
         account,
-        txCallback(resolve, reject, currentIndex, eventCallback)
+        txCallback(resolve, reject, 'exchange')
       );
     }
 

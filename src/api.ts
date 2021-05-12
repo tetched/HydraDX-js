@@ -2,19 +2,27 @@ import { ApiPromise, WsProvider } from '@polkadot/api';
 
 import { ApiListeners, HydraApiPromise } from './types';
 import TypeConfig from './config/type';
+import { processChainEvent } from './methods/tx/_events';
+
+import {initHdxEventEmitter} from './utils/eventEmitter';
 
 import * as query from './methods/query';
 import * as tx from './methods/tx';
 
 let api: HydraApiPromise;
+const hdxEventEmitter: any = initHdxEventEmitter();
 
 const getApi = (): HydraApiPromise => api;
 
-const initialize = async (apiListeners?: ApiListeners, apiUrl: string = 'ws://127.0.0.1:9944', maxRetries: number = 20): Promise<HydraApiPromise> => {
+const initialize = async (
+  apiListeners?: ApiListeners,
+  apiUrl: string = 'ws://127.0.0.1:9944',
+  maxRetries: number = 20
+): Promise<HydraApiPromise> => {
   return new Promise<any>(async (resolve, reject) => {
     const wsProvider = new WsProvider(apiUrl, false);
     let reconnectionsIndex = 0;
-    let isDisconnection  = false;
+    let isDisconnection = false;
 
     /**
      * Recovering connection to WS. Will be done "reconnectionsNumber" attempts.
@@ -35,6 +43,22 @@ const initialize = async (apiListeners?: ApiListeners, apiUrl: string = 'ws://12
       }
     };
 
+    const addTxEventListener = (apiInst: HydraApiPromise) => {
+      // We need set event listener even if user didn't provide handler callback
+      // for this.
+      let onTxEventCallback = (data: any) => {};
+      if (apiListeners && apiListeners.onTxEvent)
+        onTxEventCallback = apiListeners.onTxEvent;
+
+      apiInst.query.system.events((events: any) => {
+        processChainEvent({ events }, eventData =>
+          onTxEventCallback(eventData)
+        );
+        // someAnotherCallback();
+        hdxEventEmitter.emit('systemEvent', events);
+      });
+    };
+
     /**
      * We need setup websocket listeners "on" before running connection.
      */
@@ -48,7 +72,7 @@ const initialize = async (apiListeners?: ApiListeners, apiUrl: string = 'ws://12
         resolve(api);
         return api;
       }
-  
+
       await new ApiPromise({
         provider: wsProvider,
         types: TypeConfig,
@@ -86,27 +110,29 @@ const initialize = async (apiListeners?: ApiListeners, apiUrl: string = 'ws://12
           api = apiInstance;
           api.hydraDx = {
             query,
-            tx
+            tx,
           };
           if (apiListeners && apiListeners.ready) {
             apiListeners.ready(api);
           }
+          addTxEventListener(api);
           resolve(api);
         })
         .isReadyOrError.then(apiResponse => {
           api = apiResponse;
           api.hydraDx = {
             query,
-            tx
+            tx,
           };
           if (apiListeners && apiListeners.connected) {
             apiListeners.connected(api);
           }
+          addTxEventListener(api);
           resolve(api);
         })
         .catch(e => {
           if (apiListeners && apiListeners.error) {
-            apiListeners.error(e); 
+            apiListeners.error(e);
           }
           reject(e);
         });
