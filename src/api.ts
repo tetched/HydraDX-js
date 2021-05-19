@@ -51,7 +51,7 @@ const initialize = async (
         onTxEventCallback = apiListeners.onTxEvent;
 
       apiInst.query.system.events((events: any) => {
-        processChainEvent({ events }, pairedEventsData =>
+        processChainEvent(events, pairedEventsData =>
           onTxEventCallback(pairedEventsData)
         );
       });
