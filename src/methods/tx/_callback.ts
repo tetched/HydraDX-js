@@ -1,32 +1,19 @@
 import Api from '../../api';
-import { processTradeTransactionEvent } from './_events';
-import { ChainEventCallback, TradeTransaction } from '../../types';
-import { getHdxEventEmitter } from './../../utils/eventEmitter';
+import { processExchangeTransactionEvent } from './_events';
 
-export const txCallback = (
-  resolve: any,
-  reject: any,
-  methodName?: string
-) => ({ dispatchError, dispatchInfo, events, status }: any) => {
+export const txCallback = (resolve: any, reject: any, methodName?: string) => ({
+  dispatchError,
+  dispatchInfo,
+  events,
+  status,
+}: any) => {
   const api = Api.getApi();
-  const hdxEventEmitter = getHdxEventEmitter();
-
-  // like this
-  // apiInst.query.system.events((events: any) => {
-  //   processChainEvent({ events })
-  // });
-  // eventEmitter
-  // here you need as soon as you call swap fn you need start listen global chain events
-  // and when I find intention ID I'll pair IDs from global event and from "events" data above
-  // and only after that send response to user
-
-  // also we need global listener with tmp storage and pair all transactions
-
-  // if (tradeTransaction !== undefined && eventCallback !== undefined)
-  //   processChainEvent({ events, status, tradeTransaction }, eventCallback, resolve, reject);
 
   if (methodName === 'exchange') {
-    hdxEventEmitter.on('systemEvent', () => processTradeTransactionEvent(events, resolve, reject))
+    processExchangeTransactionEvent(events)
+      .then(transactionData => resolve(transactionData))
+      .catch(transactionErrorData => reject(transactionErrorData));
+    return;
   } else {
     if (status.isInBlock) {
       const successEvents: any[] = [];
@@ -68,8 +55,8 @@ export const txCallback = (
         });
       } else {
         const successData = (successEvents.length > 0
-            ? successEvents
-            : events
+          ? successEvents
+          : events
         ).map(({ event: { section, method, data } }: any) => {
           const [dispatchInfo] = data;
 
@@ -86,7 +73,6 @@ export const txCallback = (
       }
     }
   }
-
 };
 
 export const txCatch = (reject: any) => (error: any) => {

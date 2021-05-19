@@ -3,7 +3,6 @@ import { bnToBn } from '@polkadot/util';
 import BigNumber from 'bignumber.js';
 import { AddressOrPair, Signer } from '@polkadot/api/types';
 import { txCallback, txCatch } from './_callback';
-import { ChainEventCallback, TradeTransaction } from '../../types';
 
 export function swap({
   asset1Id,
@@ -14,7 +13,6 @@ export function swap({
   slippage = new BigNumber('100000000000000000'),
   account,
   signer,
-  eventCallback,
 }: {
   asset1Id: string;
   asset2Id: string;
@@ -24,7 +22,6 @@ export function swap({
   slippage: BigNumber;
   account: AddressOrPair;
   signer?: Signer;
-  eventCallback: ChainEventCallback;
 }) {
   const api = Api.getApi();
   let tx: any;

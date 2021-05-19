@@ -1,5 +1,6 @@
 let hdxEventEmitter: any;
 
+// TODO check types
 class HdxEventEmitter {
   _events: { [key: string]: any };
 
@@ -15,14 +16,14 @@ class HdxEventEmitter {
     this._events[name].push(listener);
   }
 
-  removeListener(name: string, listenerToRemove: string) {
+  removeListener(name: string, listenerToRemove: any) {
     if (!this._events[name]) {
       throw new Error(
         `Can't remove a listener. Event "${name}" doesn't exits.`
       );
     }
 
-    const filterListeners = (listener: string) => listener !== listenerToRemove;
+    const filterListeners = (listener: any) => listener !== listenerToRemove;
 
     this._events[name] = this._events[name].filter(filterListeners);
   }

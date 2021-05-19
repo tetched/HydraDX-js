@@ -1,13 +1,32 @@
 import {
-  ChainEventCallback,
-  TradeTransaction,
-  ChainEventResponse,
-  SuccessEventData,
+  ChainBlockEventsCallback,
+  ExchangeTxEventData,
+  MergedPairedEvents,
 } from '../../types';
+import { getHdxEventEmitter } from '../../utils/eventEmitter';
 import BigNumber from 'bignumber.js';
-import Api from '../../api';
 
-let mergedPairedEvents: { [key: string]: SuccessEventData } = {};
+// export interface ExtrinsicStatus extends Enum {
+//   readonly isFuture: boolean;
+//   readonly isReady: boolean;
+//   readonly isBroadcast: boolean;
+//   readonly asBroadcast: Vec<Text>;
+//   readonly isInBlock: boolean;
+//   readonly asInBlock: Hash;
+//   readonly isRetracted: boolean;
+//   readonly asRetracted: Hash;
+//   readonly isFinalityTimeout: boolean;
+//   readonly asFinalityTimeout: Hash;
+//   readonly isFinalized: boolean;
+//   readonly asFinalized: Hash;
+//   readonly isUsurped: boolean;
+//   readonly asUsurped: Hash;
+//   readonly isDropped: boolean;
+//   readonly isInvalid: boolean;
+// }
+
+let mergedPairedEvents: MergedPairedEvents = {};
+const hdxEventEmitter = getHdxEventEmitter();
 
 // const decorateTxEventResponseData = (
 //   eventData: {
@@ -76,7 +95,7 @@ let mergedPairedEvents: { [key: string]: SuccessEventData } = {};
 //
 //   if (!events) return;
 //
-//   // TODO set/clear tmp storage with tx-s merged by intenssionID
+//   // TODO set/clear tmp storage with tx-s merged by intentionID
 //
 //   if (status.isInBlock) {
 //     const successEvents: any[] = [];
@@ -237,7 +256,7 @@ let mergedPairedEvents: { [key: string]: SuccessEventData } = {};
 //       const parsedData = data.toJSON();
 //       /**
 //        * parsedData: <Array> [AccountId, AccountId, IntentionID, IntentionID, Balance, Balance]
-//        *                     [User1 accid, User1 accid, intention id 1, intention id 2, amount 1, amount 2]
+//        *                     [User1 acc id, User1 acc id, intention id 1, intention id 2, amount 1, amount 2]
 //        */
 //
 //       if (Array.isArray(parsedData)) {
@@ -272,32 +291,119 @@ let mergedPairedEvents: { [key: string]: SuccessEventData } = {};
 //   //TODO send data
 // };
 
-const mergeEventToScope = (eventData: any) => {
-  const intentionId = eventData.data.id;
+// const getExchangeTransactionDetailsTpl = (): ExchangeTransactionDetails => {
+//   return {
+//     id: null,
+//     slippage: new BigNumber(0),
+//     fees: new BigNumber(0),
+//     match: new BigNumber(0),
+//     saved: new BigNumber(0),
+//     intentionType: '',
+//     account: '',
+//     asset1: '',
+//     asset2: '',
+//     amount: new BigNumber(0),
+//     amountSoldBought: new BigNumber(0),
+//   };
+// };
 
-  if (mergedPairedEvents[intentionId] === undefined) {
-    mergedPairedEvents[intentionId] = eventData;
+const mergeEventToScope = (receivedEventData: any) => {
+  const intentionId = receivedEventData.data.id;
+  let pairedEventData = mergedPairedEvents[intentionId];
+
+  const getMergeStatus = () => {
+    const { status } = pairedEventData;
+
+    /**
+     * Status property can be changed only to true.
+     */
+    return {
+      ready: receivedEventData.status.ready || status!.ready,
+      inBlock: receivedEventData.status.inBlock || status!.inBlock,
+      finalized: receivedEventData.status.finalized || status!.finalized,
+      error: [...status!.error, ...receivedEventData.status.error],
+    };
+  };
+
+  if (pairedEventData === undefined) {
+    pairedEventData = receivedEventData;
   } else {
-    //TODO here should be added calculation for different types of transactions
-    mergedPairedEvents[intentionId] = {
-      ...mergedPairedEvents[intentionId],
-      method: mergedPairedEvents[intentionId].push(eventData.method),
-      status: {}, // TODO process status value - merge
+    pairedEventData = {
+      dispatchInfo: [
+        ...(pairedEventData.dispatchInfo || []),
+        ...(receivedEventData.dispatchInfo || []),
+      ],
+      section: [...pairedEventData.section, ...receivedEventData.section],
+      method: [...pairedEventData.method, ...receivedEventData.method],
+      status: getMergeStatus(),
       data: {
-        ...mergedPairedEvents[intentionId].data,
-        ...eventData.data,
+        ...pairedEventData.data,
+        ...receivedEventData.data,
+        directTrades: [
+          ...(pairedEventData.data.directTrades || []),
+          ...(receivedEventData.data.directTrades || []),
+        ],
       },
     };
   }
+
+  /**
+   * Transaction values calculations
+   */
+
+  /**
+   * Calculate "match" value - total amount, which has been traded by Direct trade
+   */
+  if (
+    receivedEventData.method[0] === 'IntentionResolvedDirectTrade' &&
+    pairedEventData.data !== undefined &&
+    pairedEventData.data.directTrades !== undefined
+  ) {
+    let totalDirectTradeMatch = new BigNumber(0);
+    pairedEventData.data.directTrades.forEach(item => {
+      totalDirectTradeMatch = totalDirectTradeMatch.plus(item.amountReceived);
+    });
+    pairedEventData.data.match = totalDirectTradeMatch;
+  }
+
+  // TODO return final trade price and final trade fee
+
+  /**
+   * Calculate "totalAmountFinal" - total amount from all types of trading for
+   * this specific exchange action + fees.
+   */
+
+  const totalAmmTradeAmount: BigNumber =
+    pairedEventData.data && pairedEventData.data.amountOutAmmTrade !== undefined
+      ? pairedEventData.data.amountOutAmmTrade
+      : new BigNumber(0);
+
+  const totalDirectTradeAmount: BigNumber =
+    pairedEventData.data && pairedEventData.data.match !== undefined
+      ? pairedEventData.data.match
+      : new BigNumber(0);
+
+  const totalFeesAmount: BigNumber =
+    pairedEventData.data && pairedEventData.data.fees !== undefined
+      ? pairedEventData.data.fees
+      : new BigNumber(0);
+
+  if (!pairedEventData.data) pairedEventData.data = { id: null };
+
+  pairedEventData.data.totalAmountFinal = totalAmmTradeAmount
+    .plus(totalDirectTradeAmount)
+    .plus(totalFeesAmount);
+
+  mergedPairedEvents[intentionId] = pairedEventData;
 };
 
 export const processChainEvent = (
   records: any,
-  eventCallback: ChainEventCallback
+  eventCallback: ChainBlockEventsCallback
 ) => {
   if (!records) return;
 
-  mergedPairedEvents = {}; // TODO set/clear tmp storage with tx-s merged by intenssionID
+  mergedPairedEvents = {}; // TODO set/clear tmp storage with tx-s merged by intentionID
 
   const newEvents = records.filter(({ event }: { event: any }) =>
     [
@@ -318,10 +424,19 @@ export const processChainEvent = (
     const { data, method, section } = event;
 
     const [dispatchInfo] = data;
-    let successData: SuccessEventData = {
-      section,
-      method,
-      dispatchInfo: dispatchInfo.toString(),
+    let exchangeTxEventData: ExchangeTxEventData = {
+      section: [section],
+      method: [method],
+      dispatchInfo: [dispatchInfo.toString()],
+      status: {
+        ready: phase === 'isReady',
+        inBlock: phase === 'isInBlock',
+        finalized: phase === 'isFinalized',
+        error: [],
+      },
+      data: {
+        id: null,
+      },
     };
 
     const parsedData = data.toJSON();
@@ -334,20 +449,14 @@ export const processChainEvent = (
          */
         if (Array.isArray(parsedData) && parsedData.length === 6) {
           mergeEventToScope({
-            ...successData,
-            status: {
-              ready: phase === 'isReady',
-              inBlock: phase === 'isInBlock',
-              finalized: false, //TODO complete
-              error: [], // array of objects { methodName, errorObjectFromApi }
-            },
+            ...exchangeTxEventData,
             data: {
               id: parsedData[5]?.toString(),
               intentionType: parsedData[4]?.toString(),
               account: parsedData[0]?.toString(),
               asset1: parsedData[1]?.toString(),
               asset2: parsedData[2]?.toString(),
-              amount: parsedData[3]?.toString(),
+              amount: new BigNumber(parsedData[3]?.toString() || 0),
             },
           });
         }
@@ -359,13 +468,13 @@ export const processChainEvent = (
          */
         if (Array.isArray(parsedData)) {
           mergeEventToScope({
-            ...successData,
+            ...exchangeTxEventData,
             data: {
               id: parsedData[2]?.toString(),
               intentionType: parsedData[1]?.toString(),
               account: parsedData[0]?.toString(),
-              amount: parsedData[3]?.toString(),
-              amountSoldBought: parsedData[4]?.toString(),
+              amountAmmTrade: new BigNumber(parsedData[3]?.toString() || 0),
+              amountOutAmmTrade: new BigNumber(parsedData[4]?.toString() || 0),
             },
           });
         }
@@ -373,23 +482,48 @@ export const processChainEvent = (
       case 'IntentionResolvedDirectTrade':
         /**
          * parsedData: <Array> [AccountId, AccountId, IntentionID, IntentionID, Balance, Balance]
-         *                     [User1 accid, User2 accid, intention id 1, intention id 2, amount 1, amount 2]
+         *                     [User1 acc id, User2 acc id, intention id 1, intention id 2, amount 1, amount 2]
+         *
+         * First amount is amount of asset A going from first account to second account,
+         * and the second amount is asset B going from second account to first account.
+         *
+         * Which assets have been used - check in event "IntentionRegistered" by
+         * appropriate IntentionID.
+         *
+         * One exchange action (sell/buy) can includes multiple direct trade transactions,
+         * that's why we need track all direct trade transactions for one exchange action.
          */
         if (Array.isArray(parsedData)) {
           mergeEventToScope({
-            ...successData,
+            ...exchangeTxEventData,
+            intentions: [parsedData[2]?.toString(), parsedData[3]?.toString()],
             data: {
               id: parsedData[2]?.toString(),
-              account: parsedData[0]?.toString(),
-              amount: parsedData[4]?.toString(),
+              directTrades: [
+                {
+                  amountSent: new BigNumber(parsedData[4]?.toString() || 0),
+                  amountReceived: new BigNumber(parsedData[5]?.toString() || 0),
+                  account1: parsedData[0]?.toString(),
+                  account2: parsedData[1]?.toString(),
+                  pairedIntention: parsedData[3]?.toString(),
+                },
+              ],
             },
           });
           mergeEventToScope({
-            ...successData,
+            ...exchangeTxEventData,
+            intentions: [parsedData[2]?.toString(), parsedData[3]?.toString()],
             data: {
               id: parsedData[3]?.toString(),
-              account: parsedData[1]?.toString(),
-              amount: parsedData[5]?.toString(),
+              directTrades: [
+                {
+                  amountSent: new BigNumber(parsedData[5]?.toString() || 0),
+                  amountReceived: new BigNumber(parsedData[4]?.toString() || 0),
+                  account1: parsedData[1]?.toString(),
+                  account2: parsedData[0]?.toString(),
+                  pairedIntention: parsedData[2]?.toString(),
+                },
+              ],
             },
           });
         }
@@ -397,7 +531,7 @@ export const processChainEvent = (
       case 'IntentionResolvedDirectTradeFees':
         /**
          * parsedData: <Array> [AccountId, AccountId, AssetId, Balance]
-         *                     [User1 accid, User2 accid, assetId, amount]
+         *                     [who, account paid to, asset, fee amount]
          */
         break;
       case 'IntentionResolveErrorEvent':
@@ -407,7 +541,16 @@ export const processChainEvent = (
          */
         if (Array.isArray(parsedData)) {
           mergeEventToScope({
-            ...successData,
+            ...exchangeTxEventData,
+            status: {
+              ...exchangeTxEventData.status,
+              error: [
+                {
+                  method,
+                  data,
+                },
+              ],
+            },
             data: {
               id: parsedData[3]?.toString(),
               account: parsedData[0]?.toString(),
@@ -424,59 +567,77 @@ export const processChainEvent = (
   /**
    * If "mergedPairedEvents" contains any error, we need reject with failed tx data.
    */
+  hdxEventEmitter.emit('onSystemEventProcessed', mergedPairedEvents);
 
-  eventCallback(mergedPairedEvents); //TODO send data
+  /**
+   * Send paired events data for subscribed for all system events UI listener
+   */
+  eventCallback(mergedPairedEvents);
 };
 
-export const processTradeTransactionEvent = (
-  events: any,
-  resolve: any,
-  reject: any
-) => {
-  let currentTxIntentionId: string = '';
-  let errorData: any = null;
+export const processExchangeTransactionEvent = (events: any) => {
+  return new Promise((resolve, reject): void => {
+    let currentTxIntentionId: string = '';
+    let errorData: any = null;
 
-  events.forEach((eventRecord: any) => {
-    if (!eventRecord.event) {
-      return;
+    events.forEach((eventRecord: any) => {
+      if (!eventRecord.event) {
+        return;
+      }
+
+      const { data, method } = eventRecord.event;
+
+      const parsedData = data.toJSON();
+
+      /**
+       * parsedData: <Array> [AccountId, AssetId, AssetId, Balance, IntentionType, IntentionID]
+       *                     [who, asset a, asset b, amount, intention type, intention id]
+       */
+      if (
+        method === 'IntentionRegistered' &&
+        Array.isArray(parsedData) &&
+        parsedData.length === 6
+      ) {
+        currentTxIntentionId = parsedData[5].toString();
+      }
+
+      if (method === 'ExtrinsicFailed') {
+        errorData = data; //TODO add error data processing
+      }
+    });
+
+    if (errorData) {
+      reject(errorData);
+      return; // Terminate execution "processExchangeTransactionEvent" function here.
     }
 
-    const { data, method, section } = eventRecord.event;
-
-    const parsedData = data.toJSON();
-
-    /**
-     * parsedData: <Array> [AccountId, AssetId, AssetId, Balance, IntentionType, IntentionID]
-     *                     [who, asset a, asset b, amount, intention type, intention id]
-     */
-    if (
-      method === 'IntentionRegistered' &&
-      Array.isArray(parsedData) &&
-      parsedData.length === 6
-    ) {
-      currentTxIntentionId = parsedData[5].toString();
+    //TODO wait for data from system.events
+    if (!currentTxIntentionId || currentTxIntentionId.length === 0) {
+      reject(false);
+      return; // Terminate execution "processExchangeTransactionEvent" function here.
     }
 
-    if (
-      method === 'ExtrinsicFailed'
-    ) {
-      errorData = data; //TODO add error data processing
+    //TODO check all required fields in tx data
+    if (mergedPairedEvents[currentTxIntentionId] !== undefined) {
+      resolve(mergedPairedEvents[currentTxIntentionId]);
+      return; // Terminate execution "processExchangeTransactionEvent" function here.
     }
+
+    const checkPairedTxData = (systemEventPairedData: MergedPairedEvents) => {
+      //TODO check all required fields in tx data
+      if (systemEventPairedData[currentTxIntentionId] !== undefined) {
+        resolve(systemEventPairedData[currentTxIntentionId]);
+
+        hdxEventEmitter.removeListener(
+          'onSystemEventProcessed',
+          checkPairedTxData
+        );
+        return;
+      }
+    };
+
+    hdxEventEmitter.on('onSystemEventProcessed', checkPairedTxData);
   });
-
-  if (errorData) {
-    reject(errorData);
-  }
-
-  //TODO wait for data from system.events
-  if (
-    currentTxIntentionId &&
-    currentTxIntentionId.length > 0 &&
-    mergedPairedEvents[currentTxIntentionId] !== undefined
-    //TODO add check is all required fields in tx data existing and filled
-  ) {
-    resolve(mergedPairedEvents[currentTxIntentionId]);
-  }
 
   // TODO add reject processing
 };

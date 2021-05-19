@@ -1,4 +1,3 @@
-import BN from 'bn.js';
 import BigNumber from 'bignumber.js';
 import { ApiPromise } from '@polkadot/api';
 import { AddressOrPair } from '@polkadot/api/types';
@@ -45,13 +44,7 @@ export type PoolInfo = {
 
 export type TokenTradeMap = { [key: number]: number[] };
 
-export type ChainEventCallback = ({
-  type,
-  data,
-}: {
-  type?: string;
-  data: SuccessEventData[];
-}) => void;
+export type ChainBlockEventsCallback = (data: MergedPairedEvents) => void;
 
 export type TradeTransaction = {
   index: number;
@@ -65,8 +58,8 @@ export type TradeTransaction = {
   progress: number;
 };
 
-export type TransactionDetails = {
-  id: number | null;
+export type ExchangeTransactionDetails = {
+  id: string | null;
   slippage?: BigNumber;
   fees?: BigNumber;
   match?: BigNumber;
@@ -75,14 +68,38 @@ export type TransactionDetails = {
   account?: string;
   asset1?: string;
   asset2?: string;
-  amount?: string;
-  amountSoldBought?: string;
-  errorDetails?: string;
+  amount?: BigNumber;
+  amountAmmTrade?: BigNumber;
+  amountOutAmmTrade?: BigNumber;
+  amountSoldBought?: BigNumber;
+  totalAmountFinal?: BigNumber,
+  directTrades?: {
+    amountSent: BigNumber;
+    amountReceived: BigNumber;
+    account1: string;
+    account2: string;
+    pairedIntention: string;
+  }[];
 };
 
 export type SuccessEventData = {
   section: string;
   method: string;
   dispatchInfo?: any;
-  data?: TransactionDetails;
+  data?: ExchangeTransactionDetails;
 };
+
+export type ExchangeTxEventData = {
+  section: string[];
+  method: string[];
+  dispatchInfo: string[];
+  status: {
+    ready: boolean;
+    inBlock: boolean;
+    finalized: boolean;
+    error: { method: string; data: any }[];
+  };
+  data: ExchangeTransactionDetails;
+};
+
+export type MergedPairedEvents = { [key: string]: ExchangeTxEventData };
