@@ -4,13 +4,12 @@ import { ApiListeners, HydraApiPromise } from './types';
 import TypeConfig from './config/type';
 import { processChainEvent } from './methods/tx/_events';
 
-import {initHdxEventEmitter} from './utils/eventEmitter';
+import { initHdxEventEmitter } from './utils/eventEmitter';
 
 import * as query from './methods/query';
 import * as tx from './methods/tx';
 
 let api: HydraApiPromise;
-const hdxEventEmitter: any = initHdxEventEmitter();
 
 const getApi = (): HydraApiPromise => api;
 
@@ -23,6 +22,12 @@ const initialize = async (
     const wsProvider = new WsProvider(apiUrl, false);
     let reconnectionsIndex = 0;
     let isDisconnection = false;
+
+    try {
+      initHdxEventEmitter();
+    } catch (e) {
+      console.log(e);
+    }
 
     /**
      * Recovering connection to WS. Will be done "reconnectionsNumber" attempts.

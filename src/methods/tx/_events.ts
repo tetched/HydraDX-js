@@ -26,7 +26,6 @@ import BigNumber from 'bignumber.js';
 // }
 
 let mergedPairedEvents: MergedPairedEvents = {};
-const hdxEventEmitter = getHdxEventEmitter();
 
 // const decorateTxEventResponseData = (
 //   eventData: {
@@ -402,7 +401,7 @@ export const processChainEvent = (
   eventCallback: ChainBlockEventsCallback
 ) => {
   if (!records) return;
-
+  const hdxEventEmitter = getHdxEventEmitter();
   mergedPairedEvents = {}; // set/clear tmp storage with tx-s merged by intentionID
 
   // const newEvents = records.filter(({ event }: { event: any }) =>
@@ -579,6 +578,7 @@ export const processExchangeTransactionEvent = (events: any) => {
   return new Promise((resolve, reject): void => {
     let currentTxIntentionId: string = '';
     let errorData: any = null;
+    const hdxEventEmitter = getHdxEventEmitter();
 
     events.forEach((eventRecord: any) => {
       if (!eventRecord.event) {
