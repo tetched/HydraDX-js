@@ -403,19 +403,19 @@ export const processChainEvent = (
 ) => {
   if (!records) return;
 
-  mergedPairedEvents = {}; // TODO set/clear tmp storage with tx-s merged by intentionID
+  mergedPairedEvents = {}; // set/clear tmp storage with tx-s merged by intentionID
 
-  const newEvents = records.filter(({ event }: { event: any }) =>
-    [
-      'IntentionRegistered',
-      'IntentionResolvedAMMTrade',
-      'IntentionResolvedDirectTrade',
-      'IntentionResolvedDirectTradeFees',
-      'IntentionResolveErrorEvent',
-    ].includes(event.method)
-  );
+  // const newEvents = records.filter(({ event }: { event: any }) =>
+  //   [
+  //     'IntentionRegistered',
+  //     'IntentionResolvedAMMTrade',
+  //     'IntentionResolvedDirectTrade',
+  //     'IntentionResolvedDirectTradeFees',
+  //     'IntentionResolveErrorEvent',
+  //   ].includes(event.method)
+  // );
 
-  newEvents.forEach((eventRecord: any) => {
+  records.forEach((eventRecord: any) => {
     if (!eventRecord.event) {
       return;
     }
