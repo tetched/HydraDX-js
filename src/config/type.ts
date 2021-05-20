@@ -33,5 +33,10 @@ export default {
   },
   "LookupSource": "AccountId",
   "OrderedSet": "Vec<AssetId>",
-  "Price": "Balance"
+  "Price": "Balance",
+  "AccountData": {
+    "free": "Balance",
+    "frozen": "Balance",
+    "reserved": "Balance"
+  }
 }
