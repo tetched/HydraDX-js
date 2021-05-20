@@ -1,18 +1,15 @@
 export default {
-  "AssetPair": {
-    "asset_in": "AssetId",
-    "asset_out": "AssetId"
-  },
   "Amount": "i128",
   "AmountOf": "Amount",
   "Address": "AccountId",
+  "AccountData": {
+    "free": "Balance",
+    "frozen": "Balance",
+    "reserved": "Balance"
+  },
   "BalanceInfo": {
     "amount": "Balance",
     "assetId": "AssetId"
-  },
-  "Chain": {
-    "genesisHash": "Vec<u8>",
-    "lastBlockHash": "Vec<u8>"
   },
   "CurrencyId": "AssetId",
   "CurrencyIdOf": "AssetId",
@@ -32,11 +29,9 @@ export default {
     ]
   },
   "LookupSource": "AccountId",
-  "OrderedSet": "Vec<AssetId>",
   "Price": "Balance",
-  "AccountData": {
-    "free": "Balance",
-    "frozen": "Balance",
-    "reserved": "Balance"
+  "Chain": {
+    "genesisHash": "Vec<u8>",
+    "lastBlockHash": "Vec<u8>"
   }
 }
