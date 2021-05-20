@@ -18,9 +18,10 @@ class HdxEventEmitter {
 
   removeListener(name: string, listenerToRemove: any) {
     if (!this._events[name]) {
-      throw new Error(
-        `Can't remove a listener. Event "${name}" doesn't exits.`
-      );
+      // throw new Error(
+      //   `Can't remove a listener. Event "${name}" doesn't exits.`
+      // );
+      return;
     }
 
     const filterListeners = (listener: any) => listener !== listenerToRemove;
@@ -30,7 +31,8 @@ class HdxEventEmitter {
 
   emit(name: string, data: any) {
     if (!this._events[name]) {
-      throw new Error(`Can't emit an event. Event "${name}" doesn't exits.`);
+      // throw new Error(`Can't emit an event. Event "${name}" doesn't exits.`);
+      return;
     }
 
     const fireCallbacks = (callback: any) => {
