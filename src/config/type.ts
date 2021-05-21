@@ -29,7 +29,7 @@ export default {
     "discount": "bool",
     "sell_or_buy": "IntentionType"
   },
-  "IntentionID": "u128",
+  "IntentionId": "Hash",
   "IntentionType": {
     "_enum": [
       "SELL",
