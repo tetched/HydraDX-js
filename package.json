@@ -32,6 +32,8 @@
     "transformIgnorePatterns": [
       "node_modules/(?!hack-hydra-dx-wasm).+/"
     ],
-    "plugins": ["plugin-transform-modules-commonjs"]
+    "plugins": [
+      "plugin-transform-modules-commonjs"
+    ]
   }
 }
