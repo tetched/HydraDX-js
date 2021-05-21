@@ -79,6 +79,11 @@ const initialize = async (
       await new ApiPromise({
         provider: wsProvider,
         types: TypeConfig,
+        typesAlias: {
+          tokens: {
+            AccountData: 'OrmlAccountData',
+          },
+        },
       })
         .on('error', e => {
           if (!isDisconnection) {
