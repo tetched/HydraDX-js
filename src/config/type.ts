@@ -6,6 +6,11 @@ export default {
   "Amount": "i128",
   "AmountOf": "Amount",
   "Address": "AccountId",
+  "OrmlAccountData": {
+    "free": "Balance",
+    "frozen": "Balance",
+    "reserved": "Balance"
+  },
   "BalanceInfo": {
     "amount": "Balance",
     "assetId": "AssetId"
