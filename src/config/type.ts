@@ -1,8 +1,12 @@
 export default {
+  "AssetPair": {
+    "asset_in": "AssetId",
+    "asset_out": "AssetId"
+  },
   "Amount": "i128",
   "AmountOf": "Amount",
   "Address": "AccountId",
-  "AccountData": {
+  "OrmlAccountData": {
     "free": "Balance",
     "frozen": "Balance",
     "reserved": "Balance"
@@ -10,6 +14,10 @@ export default {
   "BalanceInfo": {
     "amount": "Balance",
     "assetId": "AssetId"
+  },
+  "Chain": {
+    "genesisHash": "Vec<u8>",
+    "lastBlockHash": "Vec<u8>"
   },
   "CurrencyId": "AssetId",
   "CurrencyIdOf": "AssetId",
@@ -21,7 +29,7 @@ export default {
     "discount": "bool",
     "sell_or_buy": "IntentionType"
   },
-  "IntentionId": "u128",
+  "IntentionId": "Hash",
   "IntentionType": {
     "_enum": [
       "SELL",
@@ -29,9 +37,6 @@ export default {
     ]
   },
   "LookupSource": "AccountId",
-  "Price": "Balance",
-  "Chain": {
-    "genesisHash": "Vec<u8>",
-    "lastBlockHash": "Vec<u8>"
-  }
+  "OrderedSet": "Vec<AssetId>",
+  "Price": "U64F64"
 }

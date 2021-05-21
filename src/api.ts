@@ -52,6 +52,11 @@ const initialize = async (apiListeners?: ApiListeners, apiUrl: string = 'ws://12
       await new ApiPromise({
         provider: wsProvider,
         types: TypeConfig,
+        typesAlias: {
+          tokens: {
+            AccountData: 'OrmlAccountData',
+          },
+        },
       })
         .on('error', e => {
           if (!isDisconnection) {

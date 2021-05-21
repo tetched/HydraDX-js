@@ -9,5 +9,5 @@ test('Test getMarketcap structure', async () => {
   api = await Api.initialize({}, process.env.WS_URL);
   const alice = getAliceAccount();
 
-  api.hydraDx.query.getMarketcap(alice.address);
+  api.hydraDx.query.getMarketcap();
 });
