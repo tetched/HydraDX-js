@@ -580,23 +580,14 @@ export const processExchangeTransactionEvent = (events: any) => {
     let errorData: any = null;
     const hdxEventEmitter = getHdxEventEmitter();
 
-    console.log('SDK events - ', events);
-
     events.forEach((eventRecord: any) => {
-      console.log('SDK eventRecord - ', eventRecord);
       if (!eventRecord.event) {
         return;
       }
 
       const { data, method } = eventRecord.event;
 
-      console.log('SDK method - ', method);
-
-
       const parsedData = data.toJSON();
-
-      console.log('SDK parsedData - ', parsedData);
-
 
       /**
        * parsedData: <Array> [AccountId, AssetId, AssetId, Balance, IntentionType, IntentionID]
@@ -619,8 +610,6 @@ export const processExchangeTransactionEvent = (events: any) => {
       reject(errorData);
       return; // Terminate execution "processExchangeTransactionEvent" function here.
     }
-    console.log('SDK currentTxIntentionId - ', currentTxIntentionId);
-
 
     //TODO wait for data from system.events
     if (!currentTxIntentionId || currentTxIntentionId.length === 0) {

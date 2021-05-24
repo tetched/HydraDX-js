@@ -9,15 +9,7 @@ export const txCallback = (resolve: any, reject: any, methodName?: string) => ({
 }: any) => {
   const api = Api.getApi();
 
-  console.log('SDK -------');
-  console.log(
-    'SDK methodName + status - ',
-    methodName,
-    status.toString()
-  );
-
   if (methodName === 'exchange') {
-    console.log('SDK go to processExchangeTransactionEvent with status - ', status.toString());
     processExchangeTransactionEvent(events)
       .then(transactionData => resolve(transactionData))
       .catch(transactionErrorData => reject(transactionErrorData));
