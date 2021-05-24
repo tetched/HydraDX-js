@@ -27,6 +27,18 @@ export function swap({
   let tx: any;
   let result: any;
 
+  /**
+   * This wrapper for "signAndSend" callback is necessary for running "txCallback"
+   * only if events status is InBlock. Otherwise, "txCallback" won't receive
+   * events list as it will be still empty.
+   */
+  const exchangeSignAndSendCallback = (resolve: any, reject: any) => (
+    callbackData: any
+  ) => {
+    const { status } = callbackData;
+    if (status.isInBlock) txCallback(resolve, reject, 'exchange')(callbackData);
+  };
+
   if (actionType === 'buy') {
     tx = api.tx.exchange
       //TODO: CALCULATE LIMITS FROM SPOT PRICE
@@ -54,12 +66,12 @@ export function swap({
       result = tx.signAndSend(
         account,
         { signer },
-        txCallback(resolve, reject, 'exchange')
+        exchangeSignAndSendCallback(resolve, reject)
       );
     } else {
       result = tx.signAndSend(
         account,
-        txCallback(resolve, reject, 'exchange')
+        exchangeSignAndSendCallback(resolve, reject)
       );
     }
 
