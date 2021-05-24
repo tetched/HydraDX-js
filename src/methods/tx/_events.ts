@@ -581,13 +581,21 @@ export const processExchangeTransactionEvent = (events: any) => {
     const hdxEventEmitter = getHdxEventEmitter();
 
     events.forEach((eventRecord: any) => {
+      console.log('SDK -------');
+      console.log('SDK eventRecord - ', eventRecord);
       if (!eventRecord.event) {
         return;
       }
 
       const { data, method } = eventRecord.event;
 
+      console.log('SDK method - ', method);
+
+
       const parsedData = data.toJSON();
+
+      console.log('SDK parsedData - ', parsedData);
+
 
       /**
        * parsedData: <Array> [AccountId, AssetId, AssetId, Balance, IntentionType, IntentionID]
@@ -610,10 +618,12 @@ export const processExchangeTransactionEvent = (events: any) => {
       reject(errorData);
       return; // Terminate execution "processExchangeTransactionEvent" function here.
     }
+    console.log('SDK currentTxIntentionId - ', currentTxIntentionId);
+
 
     //TODO wait for data from system.events
     if (!currentTxIntentionId || currentTxIntentionId.length === 0) {
-      reject(false);
+      reject(new Error('Intention ID has not been found in exchange even data.'));
       return; // Terminate execution "processExchangeTransactionEvent" function here.
     }
 
