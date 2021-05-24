@@ -1,6 +1,13 @@
 module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
+  transform: {
+    '^.+\\.js?$': require.resolve('babel-jest'),
+    '^.+\\.mjs?$': require.resolve('babel-jest')
+  },
+  transformIgnorePatterns: [
+    "node_modules/(?!(@polkadot\/api|node-fetch))/",
+  ],
   moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "node"],
   globals: {
     "ts-jest": {

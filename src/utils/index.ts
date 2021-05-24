@@ -24,4 +24,6 @@ const decToBn = (bignumber: BigNumber): BN => bnToBn(bignumber.toString());
 
 const bnToDec = (bn: BN): BigNumber => new BigNumber(bn.toString());
 
-export { decToBn, bnToDec, formatBalanceAmount };
+const getStableCoinID = () => 1;
+
+export { decToBn, bnToDec, formatBalanceAmount, getStableCoinID };

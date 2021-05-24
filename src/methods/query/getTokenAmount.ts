@@ -21,11 +21,18 @@ export const getTokenAmount = async (
     // @ts-ignore
     return bnToDec((await api.query.system.account(accountId)).data[type]);
   } else {
-    const amount: AccountAmount = await api.query.tokens.accounts(
+    let amount: AccountAmount;
+    try {
+      amount = await api.query.tokens.accounts(
         accountId,
         assetId
-    );
-    // @ts-ignore
-    return amount[type] ? bnToDec(amount[type]) : null;
+      );
+
+      // @ts-ignore
+      return amount[type] ? bnToDec(amount[type]) : null;
+    } catch(e) {
+      console.log(e);
+      return null;
+    }
   }
 };

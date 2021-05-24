@@ -8,7 +8,7 @@
     "test": "NODE_ENV=test jest --detectOpenHandles --forceExit"
   },
   "dependencies": {
-    "@polkadot/api": "4.10.1",
+    "@polkadot/api": "^4.10.1",
     "bignumber.js": "^9.0.1",
     "bn.js": "^5.1.3",
     "hack-hydra-dx-wasm": "git+https://github.com/galacticcouncil/HydraDX-wasm#build_targets"
@@ -32,6 +32,8 @@
     "transformIgnorePatterns": [
       "node_modules/(?!hack-hydra-dx-wasm).+/"
     ],
-    "plugins": ["plugin-transform-modules-commonjs"]
+    "plugins": [
+      "plugin-transform-modules-commonjs"
+    ]
   }
 }
