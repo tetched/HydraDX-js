@@ -580,6 +580,8 @@ export const processExchangeTransactionEvent = (events: any) => {
     let errorData: any = null;
     const hdxEventEmitter = getHdxEventEmitter();
 
+    console.log('SDK events - ', events);
+
     events.forEach((eventRecord: any) => {
       console.log('SDK -------');
       console.log('SDK eventRecord - ', eventRecord);
