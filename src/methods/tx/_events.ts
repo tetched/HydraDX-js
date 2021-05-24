@@ -583,7 +583,6 @@ export const processExchangeTransactionEvent = (events: any) => {
     console.log('SDK events - ', events);
 
     events.forEach((eventRecord: any) => {
-      console.log('SDK -------');
       console.log('SDK eventRecord - ', eventRecord);
       if (!eventRecord.event) {
         return;
